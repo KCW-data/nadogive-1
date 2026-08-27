@@ -7,7 +7,14 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-ROOT = Path(__file__).resolve().parents
+# 프로젝트 루트 경로 찾기 (src 또는 sample_data 폴더가 존재하는 위치를 자동으로 탐지)
+current_file = Path(__file__).resolve()
+ROOT = current_file.parent
+for parent in current_file.parents:
+    if (parent / "src").exists() or (parent / "sample_data").exists():
+        ROOT = parent
+        break
+
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -21,6 +28,12 @@ st.title("실습 1 · 법인카드 CSV 이상탐지 대시보드")
 st.caption("주말 · 심야(22:00–05:59) · 30분 이내 분할결제(2건 이상·합계 50만원 이상)")
 
 sample_path = ROOT / "sample_data" / "corporate_card_sample.csv"
+
+# 샘플 파일 존재 여부 확인 예외 처리
+if not sample_path.exists():
+    st.error(f"샘플 데이터 파일을 찾을 수 없습니다: {sample_path}")
+    st.stop()
+
 sample_bytes = sample_path.read_bytes()
 with st.sidebar:
     st.header("입력")
